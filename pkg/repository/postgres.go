@@ -3,12 +3,13 @@ package repository
 import (
 	"fmt"
 
+	gosubscription "github.com/grancc/go-effective-mobile-test"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
 const (
-	userSubstable = "user_subs"
+	userSubsTable = "subscription"
 )
 
 type Config struct {
@@ -34,4 +35,23 @@ func NewPostgresDB(cfg Config) (*sqlx.DB, error) {
 	}
 
 	return db, nil
+}
+
+type SubsPostgres struct {
+	db *sqlx.DB
+}
+
+func NewSubsPostgres(db *sqlx.DB) *SubsPostgres {
+	return &SubsPostgres{db: db}
+}
+
+func (a *SubsPostgres) CreateSubscription(uSub gosubscription.Subscription) (int, error) {
+	var id int
+	query := fmt.Sprintf("INSERT INTO %s (service_name, price, user_id, start_date) values ($1, $2, $3, $4) RETURNING id",
+		userSubsTable)
+	row := a.db.QueryRow(query, &uSub.ServiceName, &uSub.Price, &uSub.UserId, &uSub.StartDate)
+	if err := row.Scan(&id); err != nil {
+		return 0, err
+	}
+	return id, nil
 }

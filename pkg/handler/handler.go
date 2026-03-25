@@ -11,6 +11,14 @@ type Handler struct {
 
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
+
+	api := router.Group("/api")
+	{
+		lists := api.Group("/subscription")
+		{
+			lists.POST("/", h.createSubscription)
+		}
+	}
 	return router
 }
 

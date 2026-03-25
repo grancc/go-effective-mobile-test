@@ -1,17 +1,20 @@
 package repository
 
 import (
+	gosubscription "github.com/grancc/go-effective-mobile-test"
 	"github.com/jmoiron/sqlx"
 )
 
 type Subscriptions interface {
-	//CreateSubscription(subscription gosubscription.Subscription) (int, error)
+	CreateSubscription(subscription gosubscription.Subscription) (int, error)
 }
 
 type Repository struct {
-	//Subscriptions
+	Subscriptions
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
-	return &Repository{}
+	return &Repository{
+		Subscriptions: NewSubsPostgres(db),
+	}
 }
