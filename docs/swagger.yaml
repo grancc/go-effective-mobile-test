@@ -1,0 +1,239 @@
+basePath: /api
+definitions:
+  gosubscription.Subscription:
+    properties:
+      end_date:
+        type: string
+      id:
+        type: integer
+      price:
+        type: integer
+      service_name:
+        type: string
+      start_date:
+        type: string
+      user_id:
+        type: string
+    type: object
+  handler.CreateSubscriptionResponse:
+    properties:
+      id:
+        example: 1
+        type: integer
+    type: object
+  handler.DeleteSubscriptionResponse:
+    properties:
+      status:
+        example: success
+        type: string
+    type: object
+  handler.Error:
+    properties:
+      message:
+        example: invalid id param
+        type: string
+    type: object
+  handler.SumSubscriptionsResponse:
+    properties:
+      total:
+        example: 9900
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: CRUDL подписок и сумма стоимости за выбранный период (цена за месяц).
+  title: Subscription API
+  version: "1.0"
+paths:
+  /subscription/:
+    get:
+      description: Фильтр по user_id (обязательный query).
+      parameters:
+      - description: UUID пользователя
+        in: query
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/gosubscription.Subscription'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: Список подписок
+      tags:
+      - subscription
+    post:
+      consumes:
+      - application/json
+      description: Добавляет запись о подписке (цена за месяц).
+      parameters:
+      - description: Тело запроса
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/gosubscription.Subscription'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.CreateSubscriptionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: Создать подписку
+      tags:
+      - subscription
+  /subscription/{id}:
+    delete:
+      parameters:
+      - description: ID подписки
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.DeleteSubscriptionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: Удалить подписку
+      tags:
+      - subscription
+    get:
+      parameters:
+      - description: ID подписки
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/gosubscription.Subscription'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: Получить подписку
+      tags:
+      - subscription
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID подписки
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Поля для обновления
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/gosubscription.Subscription'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/gosubscription.Subscription'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: Обновить подписку
+      tags:
+      - subscription
+  /subscription/subs-sum:
+    get:
+      description: from, to — YYYY-MM-DD; user_id и service_name опциональны.
+      parameters:
+      - description: Начало периода YYYY-MM-DD
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: Конец периода YYYY-MM-DD
+        in: query
+        name: to
+        required: true
+        type: string
+      - description: UUID пользователя
+        in: query
+        name: user_id
+        type: string
+      - description: Название сервиса
+        in: query
+        name: service_name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.SumSubscriptionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: Сумма за период
+      tags:
+      - subscription
+schemes:
+- http
+swagger: "2.0"

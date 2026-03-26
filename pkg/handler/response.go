@@ -10,6 +10,10 @@ type Error struct {
 }
 
 func NewErrorResponse(c *gin.Context, statusCode int, message string) {
-	logrus.Error(message)
+	logrus.WithFields(logrus.Fields{
+		"status": statusCode,
+		"path":   c.Request.URL.Path,
+		"method": c.Request.Method,
+	}).Warn(message)
 	c.AbortWithStatusJSON(statusCode, Error{message})
 }

@@ -1,20 +1,15 @@
 package gosubscription
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 )
 
-type MonthYear string
-
-const MonthYearFormat = "01-2006"
-
+// Subscription модель подписки (тело запроса/ответа в API).
 type Subscription struct {
-	Id          int       `json:"-"`
-	UserId      uuid.UUID `json:"user_id"`
-	ServiceName string    `json:"service_name"`
-	Price       int64     `json:"price"`
-	StartDate   MonthYear `json:"start_date"`
-	EndDate     time.Time `json:"end_date"`
+	Id          int       `json:"id" db:"id"`
+	UserId      uuid.UUID `json:"user_id" db:"user_id"`
+	ServiceName string    `json:"service_name" db:"service_name"`
+	Price       int64     `json:"price" db:"price"`
+	StartDate   string    `json:"start_date" db:"start_date"`
+	EndDate     string    `json:"end_date" db:"end_date"`
 }

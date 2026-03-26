@@ -1,7 +1,16 @@
 package main
 
+// @title           Subscription API
+// @version         1.0
+// @description     CRUDL подписок и сумма стоимости за выбранный период (цена за месяц).
+// @host            localhost:8080
+// @BasePath        /api
+// @schemes         http
+
 import (
 	"os"
+
+	_ "github.com/grancc/go-effective-mobile-test/docs"
 
 	gosubscription "github.com/grancc/go-effective-mobile-test"
 	"github.com/grancc/go-effective-mobile-test/pkg/handler"
