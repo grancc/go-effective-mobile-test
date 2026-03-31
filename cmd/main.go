@@ -8,7 +8,10 @@ package main
 // @schemes         http
 
 import (
+	"context"
 	"os"
+	"os/signal"
+	"syscall"
 
 	_ "github.com/grancc/go-effective-mobile-test/docs"
 
@@ -44,8 +47,25 @@ func main() {
 	handlers := handler.NewHandler(services)
 	srv := new(gosubscription.Server)
 
-	if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
-		logrus.Fatalf("error occured while running http server: %s", err.Error())
+	go func() {
+		if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
+			logrus.Fatalf("error occured while running http server: %s", err.Error())
+		}
+	}()
+
+	logrus.Print("ToDoApp start")
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+
+	<-quit
+
+	logrus.Print("ToDoApp shutting down")
+	if err := srv.Shutdown(context.Background()); err != nil {
+		logrus.Errorf("error occured on server shutting down: %s", err.Error())
+	}
+
+	if err := db.Close(); err != nil {
+		logrus.Errorf("error occured on close db connection: %s", err.Error())
 	}
 }
 

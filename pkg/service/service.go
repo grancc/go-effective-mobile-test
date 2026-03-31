@@ -23,6 +23,6 @@ type Service struct {
 
 func NewService(repo *repository.Repository) *Service {
 	return &Service{
-		Subscriptions: repo.Subscriptions,
+		Subscriptions: NewSubscriptionService(repo.Subscriptions),
 	}
 }

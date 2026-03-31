@@ -101,10 +101,18 @@ func (a *SubsPostgres) UpdateSubscriptionById(id int, sub gosubscription.Subscri
 
 func (a *SubsPostgres) DeleteSubscriptionById(id int) error {
 	query := fmt.Sprintf("delete from %s where id = $1", userSubsTable)
-	_, err := a.db.Exec(query, id)
+	result, err := a.db.Exec(query, id)
 	if err != nil {
 		logrus.WithError(err).WithFields(logrus.Fields{"op": "DeleteSubscriptionById", "id": id}).Error("db")
 		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		logrus.WithError(err).WithFields(logrus.Fields{"op": "DeleteSubscriptionById", "id": id}).Error("db")
+		return err
+	}
+	if rowsAffected == 0 {
+		return ErrSubscriptionNotFound
 	}
 	return nil
 }
@@ -147,10 +155,10 @@ func (a *SubsPostgres) SumSubscriptions(serviceName *string, userID *uuid.UUID, 
 		FROM (
 			SELECT
 				price,
-				GREATEST(to_date(start_date, 'MM-YYYY'), $1::date) AS lo,
+				GREATEST(start_date, $1::date) AS lo,
 				LEAST(COALESCE(end_date, 'infinity'::date), $2::date) AS hi
 			FROM %s
-			WHERE to_date(start_date, 'MM-YYYY') <= $2::date
+			WHERE start_date <= $2::date
 			  AND COALESCE(end_date, 'infinity'::date) >= $1::date
 			  AND ($3::uuid IS NULL OR user_id = $3)
 			  AND ($4::text IS NULL OR service_name = $4)

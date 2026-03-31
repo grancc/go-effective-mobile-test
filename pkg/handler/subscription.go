@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -9,9 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	gosubscription "github.com/grancc/go-effective-mobile-test"
+	"github.com/grancc/go-effective-mobile-test/pkg/repository"
 	"github.com/sirupsen/logrus"
 )
-
 
 func (h *Handler) createSubscription(c *gin.Context) {
 	log := logrus.WithField("handler", "createSubscription")
@@ -31,11 +32,10 @@ func (h *Handler) createSubscription(c *gin.Context) {
 	}
 
 	log.WithField("id", id).Info("subscription created")
-	c.JSON(http.StatusOK, map[string]interface{}{
+	c.JSON(http.StatusCreated, map[string]interface{}{
 		"id": id,
 	})
 }
-
 
 func (h *Handler) getSubscriptionById(c *gin.Context) {
 	log := logrus.WithField("handler", "getSubscriptionById")
@@ -60,7 +60,6 @@ func (h *Handler) getSubscriptionById(c *gin.Context) {
 	log.WithField("id", id).Info("subscription returned")
 	c.JSON(http.StatusOK, subscription)
 }
-
 
 func (h *Handler) updateSubscriptionById(c *gin.Context) {
 	log := logrus.WithField("handler", "updateSubscriptionById")
@@ -92,7 +91,6 @@ func (h *Handler) updateSubscriptionById(c *gin.Context) {
 	c.JSON(http.StatusOK, subscription)
 }
 
-
 func (h *Handler) deleteSubscriptionById(c *gin.Context) {
 	log := logrus.WithField("handler", "deleteSubscriptionById")
 	id, err := strconv.Atoi(c.Param("id"))
@@ -103,6 +101,11 @@ func (h *Handler) deleteSubscriptionById(c *gin.Context) {
 
 	err = h.services.Subscriptions.DeleteSubscriptionById(id)
 	if err != nil {
+		if errors.Is(err, repository.ErrSubscriptionNotFound) {
+			log.WithField("id", id).Warn("not found")
+			NewErrorResponse(c, http.StatusNotFound, "subscription not found")
+			return
+		}
 		log.WithError(err).Error("delete failed")
 		NewErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -137,7 +140,6 @@ func (h *Handler) listSubscriptions(c *gin.Context) {
 	log.WithField("count", len(subs)).WithField("user_id", userID).Info("list ok")
 	c.JSON(http.StatusOK, subs)
 }
-
 
 func (h *Handler) sumSubscriptions(c *gin.Context) {
 	log := logrus.WithField("handler", "sumSubscriptions")
